@@ -1,0 +1,31 @@
+# pubspec.yaml
+name: flutter_application_1
+description: "Aplikasi penyedia jasa joki game Mobile Legends."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  intl: ^0.18.1
+  # Tidak ada page_transition di sini
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/epic.png
+    - assets/legend.png
+    - assets/mythic.png
+    - assets/honor.png
+    - assets/glory.png
+    - assets/immortal.png
+    - assets/IJAK LOGO.png
