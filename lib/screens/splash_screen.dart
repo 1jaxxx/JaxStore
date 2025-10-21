@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -63,6 +64,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 ),
               ),
             ),
+            
+            const SizedBox(height: 48),
+            SlideTransition(
+              position: _slideAnimation, 
+              child: FadeTransition(
+                opacity: _fadeAnimation, 
+                child: LoadingAnimationWidget.staggeredDotsWave(
+                  color: Theme.of(context).colorScheme.primary, 
+                  size: 50,
+                ),
+              ),
+            ),
+            
+            
           ],
         ),
       ),

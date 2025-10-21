@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   intl: ^0.18.1
+  loading_animation_widget: ^1.2.1
+  device_info_plus: ^12.2.0
+  carousel_slider: ^5.1.1
   # Tidak ada page_transition di sini
 
 dev_dependencies:
@@ -29,3 +32,9 @@ flutter:
     - assets/glory.png
     - assets/immortal.png
     - assets/IJAK LOGO.png
+    - assets/fanny.jpg
+    - assets/ling.jpg
+    - assets/ruby.jpg
+    - assets/nana.jpg
+    - assets/freya.jpg
+    - assets/lesley.jpg

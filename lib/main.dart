@@ -13,11 +13,8 @@ void main() {
   runApp(const MyApp());
 }
 
-// --- FUNGSI INI DIPERBARUI ---
-// Sekarang menerima RouteSettings untuk membawa data argumen
 Route _createAnimatedRoute({required Widget page, required String type, required RouteSettings settings}) {
   return PageRouteBuilder(
-    // Meneruskan settings yang berisi argumen
     settings: settings,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -80,8 +77,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       onGenerateRoute: (settings) {
-        // --- BAGIAN INI DIPERBARUI ---
-        // 'settings' sekarang diteruskan ke setiap rute
+
         switch (settings.name) {
           case '/':
             return _createAnimatedRoute(page: const SplashScreen(), type: 'fade', settings: settings);

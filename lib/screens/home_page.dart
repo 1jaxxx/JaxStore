@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:carousel_slider/carousel_slider.dart';
 import '../model/order.dart';
 import '../model/paket_jasa.dart';
 import '../model/user.dart';
 import 'detail_page.dart';
 import '../main.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,7 +66,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('JAXSTORE by Izha Valensy'),
+        title: const Text('JAXSTORE'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -84,9 +88,25 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class JasaListView extends StatelessWidget {
+class JasaListView extends StatefulWidget {
   final void Function(PaketJasa, {int? stars}) onPesan;
   JasaListView({super.key, required this.onPesan});
+
+  @override
+  State<JasaListView> createState() => _JasaListViewState();
+}
+
+class _JasaListViewState extends State<JasaListView> {
+  int _currentSlide = 0;
+
+  final List<Map<String, String>> _sliderData = [
+    {'title': 'Promo Spesial', 'subtitle': 'Diskon 20% untuk pemesanan pertama', 'image': 'assets/fanny.jpg'},
+    {'title': 'Paket Hemat A', 'subtitle': 'Epic -> Legend, cepat & aman', 'image': 'assets/ling.jpg'},
+    {'title': 'Paket Hemat B', 'subtitle': 'Legend -> Mythic, harga terjangkau', 'image': 'assets/ruby.jpg'},
+    {'title': 'Promo Weekend', 'subtitle': 'Tambahan bonus bintang', 'image': 'assets/nana.jpg'},
+    {'title': 'Paket Hemat C', 'subtitle': 'Mythic -> Honor, by pro player', 'image': 'assets/freya.jpg'},
+    {'title': 'Flash Sale', 'subtitle': 'Stok terbatas, pesan sekarang', 'image': 'assets/lesley.jpg'},
+  ];
 
   final List<PaketJasa> daftarPaket = [
     PaketJasa(id: 'p1', judul: 'Epic ke Legend', deskripsi: 'Joki dari rank Epic V ke Legend V. Proses cepat dan aman.', harga: 30000, estimasi: '1 Hari', rankAwalUrl: 'assets/epic.png', rankTujuanUrl: 'assets/legend.png'),
@@ -98,34 +118,112 @@ class JasaListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: daftarPaket.length,
-      itemBuilder: (context, index) {
-        final paket = daftarPaket[index];
-        return JasaCard(
-          paket: paket,
-          onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    DetailPage(paket: paket, onPesan: onPesan),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(1.0, 0.0);
-                  const end = Offset.zero;
-                  const curve = Curves.ease;
-                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                  return SlideTransition(
-                    position: animation.drive(tween),
-                    child: child,
-                  );
-                },
+    // Bangun daftar widget: header slider + kartu paket
+    final slider = Column(
+      children: [
+        CarouselSlider.builder(
+          itemCount: _sliderData.length,
+          itemBuilder: (context, index, realIdx) {
+            final item = _sliderData[index];
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      item['image']!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  // overlay tipis agar teks terbaca
+                  Positioned.fill(child: Container(color: Colors.black26)),
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          item['title'] ?? '',
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, shadows: [
+                            Shadow(blurRadius: 4, color: Colors.black45, offset: Offset(0,1))
+                          ]),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          item['subtitle'] ?? '',
+                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             );
           },
-        );
-      },
+          options: CarouselOptions(
+            height: 180,
+            autoPlay: true,
+            enlargeCenterPage: true,
+            viewportFraction: 0.94,
+            onPageChanged: (index, reason) {
+              setState(() => _currentSlide = index);
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _sliderData.asMap().entries.map((entry) {
+            return Container(
+              width: 8.0,
+              height: 8.0,
+              margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _currentSlide == entry.key ? Colors.white : Colors.white54,
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 2)],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+
+    final paketWidgets = daftarPaket.map((paket) {
+      return JasaCard(
+        paket: paket,
+        onTap: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  DetailPage(paket: paket, onPesan: widget.onPesan),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.ease;
+                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+            ),
+          );
+        },
+      );
+    }).toList();
+
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        slider,
+        const SizedBox(height: 16),
+        ...paketWidgets,
+      ],
     );
   }
 }
@@ -250,30 +348,94 @@ class HistoryPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final User user;
   const ProfilePage({super.key, required this.user});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String _deviceInfo = 'Memuat info perangkat...'; 
+  @override
+  void initState() {
+    super.initState();
+    _loadDeviceInfo();
+  }
+
+  // Fungsi async untuk mengambil data perangkat
+ Future<void> _loadDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    String info;
+
+    try {
+      if (kIsWeb) { 
+        final WebBrowserInfo webBrowserInfo = await deviceInfoPlugin.webBrowserInfo;
+        info = 'Browser: ${webBrowserInfo.browserName.toString().split('.').last}\n'
+               'User Agent: ${webBrowserInfo.userAgent?.substring(0, 50)}...'; 
+
+      } else if (Platform.isAndroid) {
+        final AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+        info = 'Perangkat: ${androidInfo.manufacturer} ${androidInfo.model}\n'
+               'Versi: Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt})';
+      
+      } else if (Platform.isIOS) {
+        final IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
+        info = 'Perangkat: ${iosInfo.name} (${iosInfo.model})\n'
+               'Versi: ${iosInfo.systemName} ${iosInfo.systemVersion}';
+      
+      } else {
+        info = 'Platform tidak didukung.';
+      }
+
+    } catch (e) {
+      info = 'Gagal mendapatkan info perangkat.';
+    }
+
+
+    if (mounted) {
+      setState(() {
+        _deviceInfo = info;
+      });
+    }
+  }
+  @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(radius: 50, backgroundColor: Colors.white, child: Icon(Icons.person, size: 60, color: appbarColor)),
-          const SizedBox(height: 24),
-          Text(user.name, style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 8),
-          Text(user.email, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
-            onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-            },
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, size: 60, color: appbarColor),
+            ),
+            const SizedBox(height: 24),
+            Text(widget.user.name, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text(widget.user.email, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            ),
+            
+            const Spacer(),
+            const Divider(),
+            const SizedBox(height: 16),
+            Text(
+              _deviceInfo,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            ),
+          ],
+        ),
       ),
     );
   }
